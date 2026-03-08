@@ -51,5 +51,17 @@ class Courier(Base):
     current_lng = Column(Float)
     is_online = Column(Boolean, default=False)
 
-# 5. Create all tables
+# 5. SUBSCRIPTIONS TABLE (Restored!)
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    subscription_id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"))
+    chef_id = Column(Integer, ForeignKey("chefs.chef_id"))
+    plan_type = Column(String)
+    price = Column(Float)
+    start_date = Column(Date, default=date.today)
+    is_paused = Column(Boolean, default=False)
+    delivery_time = Column(String)
+
+# 6. Create all tables
 Base.metadata.create_all(bind=engine)
