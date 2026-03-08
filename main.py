@@ -5,7 +5,16 @@ from pydantic import BaseModel
 from database import SessionLocal, Customer, Chef, Courier
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
 
+# --- ADD THIS RIGHT AFTER app = FastAPI() ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # This allows your Lovable app to talk to the backend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # 1. ALLOW LOVABLE TO TALK TO YOUR LOCAL COMPUTER (CORS)
 # This is crucial so Lovable doesn't get blocked by security settings.
 app.add_middleware(
