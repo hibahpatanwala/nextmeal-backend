@@ -12,7 +12,13 @@ SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+# ... (your imports and engine setup above)
 
+# 2. CUSTOMER TABLE
+class Customer(Base):  # <--- MAKE SURE THIS LINE IS HERE
+    __tablename__ = "customers"
+    customer_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     address_lat = Column(Float)
@@ -22,6 +28,7 @@ Base = declarative_base()
     pref_spice_level = Column(Integer)
     pref_is_veg = Column(Boolean, default=False)
 
+# 3. CHEF TABLE (and the rest of your code...)
 # 3. CHEF TABLE
 class Chef(Base):
     __tablename__ = "chefs"
