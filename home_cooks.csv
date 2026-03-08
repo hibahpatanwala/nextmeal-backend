@@ -1,0 +1,16 @@
+cook_id,cook_name,kitchen_lat,kitchen_lng,prep_time_mins,max_batch_capacity,is_active
+80001,Maya Kitchen,19.1023,72.8354,25,10,True
+80002,Sharma Authentic,19.1156,72.8291,30,15,True
+80003,Healthy Bites,19.0988,72.8412,15,5,True
+80004,Spice Route,19.1201,72.8500,45,20,True
+80005,Nani's Recipes,19.0855,72.8311,35,8,False
+80006,The Vegan Pot,19.1002,72.8455,20,12,True
+80007,Comfort Curries,19.1111,72.8388,40,15,True
+80008,Biryani Master,19.0922,72.8510,50,25,True
+80009,Fresh & Fit,19.1055,72.8250,15,6,True
+80010,Desi Tadka,19.1189,72.8401,30,10,True
+80011,Coastal Flavors,19.0888,72.8333,35,12,False
+80012,Punjabi Dhaba Home,19.1250,72.8480,40,18,True
+80013,South Indian Delights,19.0950,72.8300,20,10,True
+80014,Midnight Cravings,19.1100,72.8555,25,8,True
+80015,Sweet Treats,19.1011,72.8211,45,15,True
