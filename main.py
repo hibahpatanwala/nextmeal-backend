@@ -182,11 +182,19 @@ fake = Faker('en_IN') # Generates Indian names and phone numbers!
 
 @app.post("/admin/seed-mock-data")
 def seed_live_database(db: Session = Depends(get_db)):
-    # Create 20 Mock Customers
+    # 1. Create the Mock Chefs for the Lovable UI
+    mock_chefs = [
+        Chef(kitchen_name="Priya's Kitchen", email="priya@test.com", password_hash="pass", kitchen_lat=19.28, kitchen_lng=72.86, is_accepting_orders=True, average_rating=4.8),
+        Chef(kitchen_name="Nonna's Table", email="nonna@test.com", password_hash="pass", kitchen_lat=19.29, kitchen_lng=72.85, is_accepting_orders=True, average_rating=4.9),
+        Chef(kitchen_name="Ocean Bites", email="ocean@test.com", password_hash="pass", kitchen_lat=19.27, kitchen_lng=72.87, is_accepting_orders=True, average_rating=4.7)
+    ]
+    db.add_all(mock_chefs)
+
+    # 2. Create 20 Mock Customers
     for _ in range(20):
-        # Generate coordinates roughly around Mumbai/Mira Bhayandar
-        lat = random.uniform(19.0, 19.3) 
-        lng = random.uniform(72.8, 73.0)
+        # Generate coordinates roughly around Mira Bhayandar
+        lat = random.uniform(19.25, 19.35) 
+        lng = random.uniform(72.80, 72.90)
         
         new_customer = Customer(
             name=fake.name(),
@@ -195,11 +203,10 @@ def seed_live_database(db: Session = Depends(get_db)):
             address_lat=lat,
             address_lng=lng,
             max_budget=random.choice([1000, 1500, 2000, 2500]),
-            # Random taste vectors for your Cosine Similarity math!
             pref_spice_level=random.randint(1, 10),
             pref_is_veg=random.choice([True, False])
         )
         db.add(new_customer)
     
     db.commit()
-    return {"message": "Successfully generated 20 mock customers for the PPT!"}
+    return {"message": "Successfully generated 20 customers and 3 Kitchens for the PPT!"}
