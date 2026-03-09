@@ -300,3 +300,36 @@ def seed_10k_data(db: Session = Depends(get_db)):
     db.bulk_save_objects(new_chefs)
     db.commit()
     return {"message": "10,000 kitchens seeded successfully for the Cosine Similarity demo!"}
+
+@app.get("/courier/{courier_id}/smart-routes")
+def get_smart_routes(courier_id: int):
+    # For the presentation, we are outputting a simulated result of the 
+    # Dijkstra & Greedy batching algorithms to show the UI capabilities.
+    return {
+        "available_batches": [
+            {
+                "batch_id": "BATCH-8842",
+                "route_efficiency_score": 98.5,
+                "algorithm_used": "Greedy + Dijkstra Optimization",
+                "total_earnings": 180.0,
+                "estimated_time_mins": 45,
+                "stops": [
+                    {"step": 1, "type": "Pickup", "name": "Priya's Kitchen", "location": "Vile Parle East"},
+                    {"step": 2, "type": "Pickup", "name": "Nonna's Table", "location": "Vile Parle West"},
+                    {"step": 3, "type": "Dropoff", "name": "Customer: Hibah", "location": "NMIMS Campus"},
+                    {"step": 4, "type": "Dropoff", "name": "Customer: Nafsiha", "location": "JVPD Scheme"}
+                ]
+            },
+            {
+                "batch_id": "BATCH-8843",
+                "route_efficiency_score": 82.0,
+                "algorithm_used": "Standard Shortest Path",
+                "total_earnings": 65.0,
+                "estimated_time_mins": 20,
+                "stops": [
+                    {"step": 1, "type": "Pickup", "name": "Ocean Bites", "location": "Andheri West"},
+                    {"step": 2, "type": "Dropoff", "name": "Customer: Rahul", "location": "DN Nagar"}
+                ]
+            }
+        ]
+    }
