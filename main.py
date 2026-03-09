@@ -240,10 +240,10 @@ import random
 def get_recommendations(customer_id: int, db: Session = Depends(get_db)):
     customer = db.query(Customer).filter(Customer.customer_id == customer_id).first()
     if not customer:
-        return {"recommendations": []}
+        # RETURN A RAW LIST INSTEAD OF A DICT
+        return [] 
 
     # 1. Define the Customer Vector A (Budget, Spice, Veg)
-    # We use defaults just in case a field is empty to prevent math errors
     budget = customer.max_budget if customer.max_budget else 1500
     spice = customer.pref_spice_level if customer.pref_spice_level else 5
     is_veg = 1 if customer.pref_is_veg else 0
@@ -273,12 +273,14 @@ def get_recommendations(customer_id: int, db: Session = Depends(get_db)):
             "kitchen_name": c.kitchen_name,
             "average_rating": c.average_rating,
             "starting_price": c.starting_price,
-            "match_score": round(similarity * 100, 1) # Converts 0.98 to 98.0
+            "match_score": round(similarity * 100, 1)
         })
 
     # Sort by highest match score and return top 10
     scored_chefs.sort(key=lambda x: x["match_score"], reverse=True)
-    return {"recommendations": scored_chefs[:10]}
+    
+    # RETURN A RAW LIST INSTEAD OF A DICT
+    return scored_chefs[:10]
 
 @app.post("/admin/seed-10k")
 def seed_10k_data(db: Session = Depends(get_db)):
