@@ -63,19 +63,41 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 # 1. Define what a Registration Request looks like
 class RegisterRequest(BaseModel):
-    name: str     # For Customers/Couriers this is their name, for Chefs this is 'kitchen_name'
+    name: str 
     email: str
     password: str
-    role: str     # "Customer", "Chef", or "Courier"
+    role: str 
+    
+    # --- NEW OPTIONAL FIELDS FROM THE UI WIZARD ---
+    phone_number: str = None
+    dob: str = None
+    max_budget: int = 1500
+    pref_is_veg: bool = False
+    pref_spice_level: int = 5
+    # Defaulting roughly to Mira Bhayandar coordinates for the prototype
+    address_lat: float = 19.28 
+    address_lng: float = 72.85
 
 @app.post("/register")
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     # 2. Check which table we are adding this user to
     if request.role == "Customer":
-        # Check if email already exists
         if db.query(Customer).filter(Customer.email == request.email).first():
             raise HTTPException(status_code=400, detail="Email already registered")
-        new_user = Customer(name=request.name, email=request.email, password_hash=request.password)
+        
+        # Save all the newly collected data to the database
+        new_user = Customer(
+            name=request.name, 
+            email=request.email, 
+            password_hash=request.password,
+            phone_number=request.phone_number,
+            dob=request.dob,
+            max_budget=request.max_budget,
+            pref_is_veg=request.pref_is_veg,
+            pref_spice_level=request.pref_spice_level,
+            address_lat=request.address_lat,
+            address_lng=request.address_lng
+        )
         
     elif request.role == "Chef":
         if db.query(Chef).filter(Chef.email == request.email).first():
@@ -210,3 +232,71 @@ def seed_live_database(db: Session = Depends(get_db)):
     
     db.commit()
     return {"message": "Successfully generated 20 customers and 3 Kitchens for the PPT!"}
+
+import math
+import random
+
+@app.get("/recommendations/{customer_id}")
+def get_recommendations(customer_id: int, db: Session = Depends(get_db)):
+    customer = db.query(Customer).filter(Customer.customer_id == customer_id).first()
+    if not customer:
+        return {"recommendations": []}
+
+    # 1. Define the Customer Vector A (Budget, Spice, Veg)
+    # We use defaults just in case a field is empty to prevent math errors
+    budget = customer.max_budget if customer.max_budget else 1500
+    spice = customer.pref_spice_level if customer.pref_spice_level else 5
+    is_veg = 1 if customer.pref_is_veg else 0
+    
+    A = [budget / 1000, spice, is_veg]
+    
+    active_chefs = db.query(Chef).filter(Chef.is_accepting_orders == True).all()
+    scored_chefs = []
+
+    for c in active_chefs:
+        # 2. Define Kitchen Vector B (Price, Spice, Veg)
+        c_price = c.starting_price if c.starting_price else 1200
+        c_spice = c.spice_level if c.spice_level else 5
+        c_veg = 1 if c.is_veg else 0
+        
+        B = [c_price / 1000, c_spice, c_veg]
+        
+        # 3. Calculate Cosine Similarity
+        dot_product = sum(a * b for a, b in zip(A, B))
+        mag_a = math.sqrt(sum(a**2 for a in A))
+        mag_b = math.sqrt(sum(b**2 for b in B))
+        
+        similarity = dot_product / (mag_a * mag_b) if (mag_a * mag_b) > 0 else 0
+        
+        scored_chefs.append({
+            "chef_id": c.chef_id,
+            "kitchen_name": c.kitchen_name,
+            "average_rating": c.average_rating,
+            "starting_price": c.starting_price,
+            "match_score": round(similarity * 100, 1) # Converts 0.98 to 98.0
+        })
+
+    # Sort by highest match score and return top 10
+    scored_chefs.sort(key=lambda x: x["match_score"], reverse=True)
+    return {"recommendations": scored_chefs[:10]}
+
+@app.post("/admin/seed-10k")
+def seed_10k_data(db: Session = Depends(get_db)):
+    # Bulk insert for the NMIMS demo
+    new_chefs = [
+        Chef(
+            kitchen_name=f"Cloud Kitchen {i}",
+            email=f"chef{i}@nextmeal.com",
+            password_hash="pass123",
+            kitchen_lat=19.0 + (i / 10000),
+            kitchen_lng=72.8 + (i / 10000),
+            is_accepting_orders=True,
+            average_rating=round(random.uniform(3.5, 5.0), 1),
+            starting_price=100 + (i % 400),
+            spice_level=(i % 10) + 1,
+            is_veg=(i % 2 == 0)
+        ) for i in range(10000)
+    ]
+    db.bulk_save_objects(new_chefs)
+    db.commit()
+    return {"message": "10,000 kitchens seeded successfully for the Cosine Similarity demo!"}
